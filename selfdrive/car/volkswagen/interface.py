@@ -18,7 +18,7 @@ class CarInterface(CarInterfaceBase):
     self.buttonStatesPrev = BUTTON_STATES.copy()
 
     # Set up an alias to PT/CAM parser for ACC depending on its detected network location
-    self.cp_acc = self.cp if CP.networkLocation == NWL.fwdCamera else self.cp_cam
+    self.cp_acc = self.cp_cam
 
     # timebomb_counter mod
     self.timebomb_counter = 0
@@ -54,28 +54,15 @@ class CarInterface(CarInterfaceBase):
     if candidate in MQB_CARS:
       # Configurations shared between all MQB vehicles
       ret.safetyModel = car.CarParams.SafetyModel.volkswagen
-
-      # Determine installed network location and trans type from fingerprint
-      ret.networkLocation = NWL.fwdCamera if 0x122 in fingerprint[0] else NWL.gateway
-      if 0xAD in fingerprint[0]:  # Getriebe_11
-        ret.transmissionType = TRANS.automatic
-      elif 0x187 in fingerprint[0]:  # EV_Gearshift
-        ret.transmissionType = TRANS.direct
-      else:  # No trans at all
-        ret.transmissionType = TRANS.manual
-
+      # Force Gateway location with Automatic gearbox. Autodetect removed.
+      ret.networkLocation = NWL.gateway
+      ret.transmissionType = TRANS.automatic
+      
     elif candidate in PQ_CARS:
       # Configurations shared between all PQ35/PQ46/NMS vehicles
       ret.safetyModel = car.CarParams.SafetyModel.volkswagenPq
 
-      # Determine installed network location and trans type from fingerprint
-      ret.networkLocation = NWL.fwdCamera if 0x368 in fingerprint[0] else NWL.gateway
-      if 0x440 in fingerprint[0]:  # Getriebe_1
-        ret.transmissionType = TRANS.automatic
-      else:  # No trans at all
-        ret.transmissionType = TRANS.manual
-
-    # PER-VEHICLE PARAMETERS - EDIT HERE TO TUNE INDIVIDUAL VEHICLES
+      # PER-VEHICLE PARAMETERS - EDIT HERE TO TUNE INDIVIDUAL VEHICLES
 
     if candidate == CAR.GENERICMQB:
       # FIXME: Defaulting to VW Golf Mk7 as a baseline.
